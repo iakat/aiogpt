@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="aiogpt",
-    version="0.0.1",
+    version="0.0.4",
     description="An asyncio wrapper for the OpenAI ChatGPT API",
     url="https://github.com/katlol/aiogpt",
     packages=find_packages(),

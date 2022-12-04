@@ -1,7 +1,9 @@
-import aiohttp
 import json
-import uuid
 import os
+import traceback
+import uuid
+
+import aiohttp
 
 SESSION_TOKEN = os.environ.get("AIOGPT_SESSIONTOKEN")
 
@@ -10,6 +12,7 @@ class Chat:
     def __init__(self, session_token):
         self.session_token = session_token
         self.access_token = None
+        self.history = []
         self.API_URL = "https://chat.openai.com/backend-api/conversation"
         self.reset()
 
@@ -58,17 +61,19 @@ class Chat:
                 response = await resp.text()
         try:
             raw = json.loads((response.splitlines()[-4]).split(":", 1)[1])
+            output = "\n".join(raw["message"]["content"]["parts"])
             self.conversation_id = raw["conversation_id"]
-            self.parent_id = raw["message"]["id"]
+            self.parent_message_id = raw["message"]["id"]
+            self.history.append([conversation_id, message, output])
             return (
-                "\n".join(raw["message"]["content"]["parts"]),
+                output,
                 self.conversation_id,
-                self.parent_id,
+                self.parent_message_id,
             )
         except:
-            import traceback
 
             traceback.print_exc()
+            print(response)
             return None
 
     async def refresh(self):
@@ -78,10 +83,15 @@ class Chat:
         async with aiohttp.ClientSession(cookies=cookies) as session:
             async with session.get("https://chat.openai.com/api/auth/session") as resp:
                 response = await resp.text()
-                self.access_token = json.loads(response)["accessToken"]
-                self.session_token = session.cookie_jar._cookies["chat.openai.com"][
-                    "__Secure-next-auth.session-token"
-                ].value
+                try:
+                    self.access_token = json.loads(response)["accessToken"]
+                    self.session_token = session.cookie_jar._cookies["chat.openai.com"][
+                        "__Secure-next-auth.session-token"
+                    ].value
+                except:
+                    traceback.print_exc()
+                    print(response)
+                    return None
 
 
 if __name__ == "__main__":
