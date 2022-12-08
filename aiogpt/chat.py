@@ -19,9 +19,15 @@ class Chat:
     @property
     def headers(self):
         return {
-            "Accept": "application/json",
+            "Accept": "text/event-stream",
             "Content-Type": "application/json",
             "Authorization": f"Bearer {self.access_token}",
+            "Host": "chat.openai.com",
+            "X-Openai-Assistant-App-Id": "",
+            "Connection": "close",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Referer": "https://chat.openai.com/chat",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
         }
 
     def reset(self):
@@ -52,11 +58,11 @@ class Chat:
             ],
         }
 
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(headers=self.headers) as session:
             async with session.post(
                 self.API_URL,
-                headers=self.headers,
                 data=json.dumps(data),
+                timeout=30,
             ) as resp:
                 response = await resp.text()
         try:
@@ -80,7 +86,10 @@ class Chat:
         cookies = {
             "__Secure-next-auth.session-token": self.session_token,
         }
-        async with aiohttp.ClientSession(cookies=cookies) as session:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
+        }
+        async with aiohttp.ClientSession(cookies=cookies, headers=headers) as session:
             async with session.get("https://chat.openai.com/api/auth/session") as resp:
                 response = await resp.text()
                 try:
@@ -90,7 +99,7 @@ class Chat:
                     ].value
                 except:
                     traceback.print_exc()
-                    print(response)
+                    print("login", response)
                     return None
 
 
@@ -99,5 +108,4 @@ if __name__ == "__main__":
     chat.reset()
     import asyncio
 
-    loop = asyncio.get_event_loop()
-    print(loop.run_until_complete(chat.say("Hello!")))
+    asyncio.run(chat.say("hello"))
