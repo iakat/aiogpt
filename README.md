@@ -1,5 +1,9 @@
 # aiogpt
 
+> **Warning**
+>
+> This project is currently not operational and needs more reverse engineering effort to get authentication to work again.
+
 aiogpt is a Python library for interacting with [ChatGPT](https://chat.openai.com/).
 
 ## Usage
