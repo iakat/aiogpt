@@ -70,7 +70,7 @@ class Chat:
             output = "\n".join(raw["message"]["content"]["parts"])
             self.conversation_id = raw["conversation_id"]
             self.parent_message_id = raw["message"]["id"]
-            self.history.append([conversation_id, message, output])
+            self.history.append([self.conversation_id, message, output])
             return (
                 output,
                 self.conversation_id,
